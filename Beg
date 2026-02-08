@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rapa Suki – Math & IQ Owner Mode</title>
+<style>
+body{margin:0;font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);color:#fff;min-height:100vh;display:flex;justify-content:center;align-items:center;}
+.card{background:rgba(0,0,0,0.5);backdrop-filter:blur(10px);border-radius:22px;padding:25px;width:92%;max-width:430px;box-shadow:0 0 30px rgba(0,255,255,0.35);text-align:center;}
+h1{text-align:center;color:#00ffff;text-shadow:0 0 12px #00ffff;}
+select,button{width:100%;padding:12px;margin-top:10px;border:none;border-radius:14px;font-size:16px;}
+select{background:#111;color:white;}
+button{background:linear-gradient(135deg,#00ffff,#00aaff);color:black;font-weight:bold;cursor:pointer;transition:.2s;}
+button:hover{transform:scale(1.04);}
+#soal{font-size:22px;margin:20px 0;}
+.pilihan button{background:#111;color:#00ffff;border:1px solid #00ffff;margin-top:10px;}
+.pilihan button:hover{background:#00ffff;color:black;}
+#hasil{text-align:center;font-size:18px;margin-top:15px;}
+#jelas{background:#000;padding:12px;border-radius:12px;margin-top:15px;font-size:14px;white-space:pre-line;display:none;}
+</style>
+</head>
+<body>
+
+<div class="card">
+<h1>🧠 RAPA SUKI</h1>
+
+<button onclick="loginOwner()">Login Owner 🔑</button>
+
+<select id="mode">
+  <option value="easy">Easy</option>
+  <option value="hard" id="hardOpt">Hard 🔒</option>
+  <option value="impossible" id="impOpt">Impossible 🔒</option>
+  <option value="ngawi" id="ngawiOpt">Ngawi Suki ☠ 🔒</option>
+  <option value="iq">Tes IQ 🔥</option>
+</select>
+
+<button onclick="mulai()">START</button>
+
+<div id="soal">Pilih mode</div>
+<div class="pilihan" id="pilihan"></div>
+<div id="hasil"></div>
+<div id="jelas"></div>
+
+<!-- Audio Nuke -->
+<audio id="nukeSound">
+  <source src="https://www.soundjay.com/explosion/sounds/explosion-01.mp3" type="audio/mpeg">
+</audio>
+
+</div>
+
+<script>
+// ===== OWNER MODE =====
+let isOwner = false;
+function loginOwner(){
+  let pw = prompt("Masukkan password owner:");
+  if(pw==="rapaNgawi123"){
+    isOwner = true;
+    unlock.hard=true; unlock.impossible=true; unlock.ngawi=true;
+    localStorage.setItem("unlock", JSON.stringify(unlock));
+    alert("Owner mode aktif! Semua mode terbuka.");
+    updateUnlockUI();
+  } else { alert("Salah password!"); }
+}
+
+// ===== UNLOCK SYSTEM =====
+let unlock = JSON.parse(localStorage.getItem("unlock")) || {hard:false, impossible:false, ngawi:false};
+function updateUnlockUI(){
+  if(unlock.hard) hardOpt.textContent="Hard";
+  if(unlock.impossible) impOpt.textContent="Impossible";
+  if(unlock.ngawi) ngawiOpt.textContent="Ngawi Suki ☠";
+}
+
+// ===== UTILITY =====
+let benar=0,score=0,soalKe=0;
+function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+
+// ===== GENERATE SOAL BANYAK =====
+let easySoal=[],hardSoal=[],impSoal=[],ngawiSoal=[];
+for(let i=0;i<30;i++){let a=rnd(1,20),b=rnd(1,20);easySoal.push({q:`${a}+${b}=?`, a:a+b, e:`${a}+${b}=${a+b}`});}
+for(let i=0;i<40;i++){let a=rnd(5,20),b=rnd(2,10);hardSoal.push({q:`${a}×${b}=?`, a:a*b, e:`${a}×${b}=${a*b}`});}
+for(let i=0;i<50;i++){let a=rnd(5,15),b=rnd(2,6),c=rnd(2,5);impSoal.push({q:`${a}+${b}×${c}=?`, a:a+b*c, e:`${b}×${c}=${b*c}\n${a}+${b*c}=${a+b*c}`});}
+for(let i=0;i<60;i++){let a=rnd(6,12),b=rnd(3,9),c=rnd(2,6),d=rnd(2,5);ngawiSoal.push({q:`${a}+${b}×${c}-${d}÷2=?`, a:a+(b*c)-Math.floor(d/2), e:`${b}×${c}=${b*c}\n${d}÷2=${Math.floor(d/2)}\nHasil=${a+(b*c)-Math.floor(d/2)}`});}
+
+// ===== MULAI =====
+function mulai(){
+  let mode=document.getElementById("mode").value;
+  if(mode=="hard" && !unlock.hard && !isOwner){alert("Hard masih terkunci"); return;}
+  if(mode=="impossible" && !unlock.impossible && !isOwner){alert("Impossible masih terkunci"); return;}
+  if(mode=="ngawi" && !unlock.ngawi && !isOwner){alert("Ngawi Suki masih terkunci ☠"); return;}
+  score=0; soalKe=0; document.getElementById("hasil").textContent="";
+  updateUnlockUI(); nextSoal();
+}
+
+// ===== NEXT SOAL =====
+function nextSoal(){
+  soalKe++;
+  let mode=document.getElementById("mode").value;
+  let soalData,jel;
+
+  if(mode=="easy"){soalData=easySoal.shift();}
+  if(mode=="hard"){soalData=hardSoal.shift();}
+  if(mode=="impossible"){soalData=impSoal.shift();}
+  if(mode=="ngawi"){soalData=ngawiSoal.shift();}
+  if(mode=="iq"){let soalIQ=[{q:"2,4,8,16,?",a:32,e:"Pola dikali 2"},{q:"Bloop->Razz, Razz->Zap. Semua Bloop Zap?",a:"YA",e:"Logika transitif"},{q:"5 orang butuh 5 menit buat 5 barang. 100 orang?",a:5,e:"Kerja paralel"},{q:"Mana yang beda? (Segitiga,Lingkaran,Persegi)",a:"Segitiga",e:"Segitiga berbeda"},{q:"3,6,11,18,?",a:27,e:"+3,+5,+7,+9"}];soalData=soalIQ[rnd(0,soalIQ.length-1)];}
+
+  if(!soalData){alert("Semua soal selesai! Skor: "+score); return;}
+  benar=soalData.a; jel=soalData.e;
+
+  document.getElementById("soal").textContent=soalData.q;
+  document.getElementById("jelas").style.display="none";
+  buatPilihan(jel,mode);
+}
+
+// ===== PILIHAN =====
+function buatPilihan(jel,mode){
+  let p=[];
+  if(mode=="iq" && typeof benar==="string"){p=["YA","TIDAK","TIDAK TAHU"];}
+  else{p=[benar, benar+rnd(1,3), benar-rnd(1,3)];}
+  p.sort(()=>Math.random()-0.5);
+  let html="";
+  p.forEach(x=>{html+=`<button onclick="cek('${x}','${jel}')">${x}</button>`;});
+  document.getElementById("pilihan").innerHTML=html;
+}
+
+// ===== CEK =====
+function cek(j,jel){
+  let hasil=document.getElementById("hasil");
+  let jelas=document.getElementById("jelas");
+  let mode=document.getElementById("mode").value;
+
+  if(j==benar){score++; hasil.textContent="✅ BENAR";hasil.style.color="#00ff99";}
+  else{hasil.textContent="❌ SALAH";hasil.style.color="#ff5555"; document.getElementById("nukeSound").play();}
+
+  jelas.textContent="Penjelasan:\n"+jel; jelas.style.display="block";
+
+  // Unlock logic
+  if(mode=="easy" && score>=5) unlock.hard=true;
+  if(mode=="hard" && score>=7) unlock.impossible=true;
+  if(mode=="impossible" && score>=7) unlock.ngawi=true;
+  localStorage.setItem("unlock", JSON.stringify(unlock));
+  updateUnlockUI();
+
+  setTimeout(()=>{nextSoal();},1800);
+}
+
+updateUnlockUI();
+</script>
+</body>
+</html>
